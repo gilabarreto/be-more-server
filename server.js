@@ -1,5 +1,6 @@
 const express = require('express');
 const axios = require('axios');
+const cors = require('cors')
 
 const app = express();
 
@@ -7,12 +8,20 @@ const PORT = process.env.PORT || 5000;
 
 require('dotenv').config()
 
+app.use(cors())
+
 app.get('/', (req, res) => {
   res.send("Hello")
 })
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
-app.get('/chat', async (req, res) => {
+
+app.post('/chat', async (req, res) => {
+
+  const prompt = req.body.data;
+  console.log("prompt", prompt)
 
   async function fetchData() {
     try {
@@ -20,9 +29,9 @@ app.get('/chat', async (req, res) => {
         'https://api.openai.com/v1/completions',
         {
           'model': 'text-davinci-002',
-          'prompt': 'Tell me a joke.',
+          'prompt': prompt,
           'temperature': 1,
-          'max_tokens': 1024
+          'max_tokens': 250
         },
         {
           headers: {
@@ -32,15 +41,15 @@ app.get('/chat', async (req, res) => {
         },
       );
 
-      console.log(response.data.choices[0].text);
+      console.log("response.data.choices[0].text", response.data.choices[0].text);
       return response.data.choices[0].text;
       
     } catch (err) {
       console.log(err);
     }
   }
-  const joke = await fetchData()
-  res.send(joke);
+  const dataResponse = await fetchData()
+  res.send(dataResponse);
 });
 
 
